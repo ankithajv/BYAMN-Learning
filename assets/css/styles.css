@@ -3826,3 +3826,70 @@ body.theme-transition * {
     background: #D1FAE5;
     border: 1px solid #10B981;
 }
+
+/* Learning Streak Styles */
+.streak-flame {
+    animation: flame-flicker 2s ease-in-out infinite alternate;
+}
+
+@keyframes flame-flicker {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1) rotate(2deg);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(1) rotate(-2deg);
+        opacity: 1;
+    }
+}
+
+.streak-pulse {
+    animation: streak-pulse 2s infinite;
+}
+
+@keyframes streak-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(249, 115, 22, 0);
+    }
+}
+
+/* Streak milestone celebrations */
+.streak-milestone {
+    background: linear-gradient(135deg, #f59e0b, #dc2626);
+    color: white;
+    border: none;
+    animation: milestone-glow 3s ease-in-out infinite;
+}
+
+@keyframes milestone-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(245, 158, 11, 0.8), 0 0 40px rgba(220, 38, 38, 0.6);
+    }
+}
+
+/* Weekly pattern grid */
+.learning-day {
+    transition: all 0.3s ease;
+}
+
+.learning-day.learned {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.learning-day.missed {
+    background: #e5e7eb;
+}
+
+.learning-day.today {
+    border: 2px solid #f59e0b;
+}

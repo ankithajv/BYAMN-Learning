@@ -56,6 +56,18 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileMenu.classList.toggle('hidden');
     }
 
+    // Initialize streak system when user logs in
+    function initializeUserStreakSystem(user) {
+        if (user) {
+            // Small delay to ensure other systems are initialized
+            setTimeout(() => {
+                if (typeof window.initializeStreakManager === 'function') {
+                    window.initializeStreakManager();
+                }
+            }, 2000);
+        }
+    }
+
     // Update UI based on auth state
     function updateAuthUI(user) {
         if (user) {
@@ -94,6 +106,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             }
+
+            // Initialize streak system for logged-in users
+            initializeUserStreakSystem(user);
         } else {
             if (userActionsDesktop) {
                 userActionsDesktop.innerHTML = `
@@ -126,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
         firebaseServices.onAuthStateChanged(updateAuthUI);
     }
 });
+
 // text animation
 function textAnimation(){
     const texts = ['Create' , 'Build' , 'Lead' ,'Succeed' , 'Grow']; 
@@ -152,6 +168,7 @@ function textAnimation(){
     type();
 }
 textAnimation();
+
 // Utility functions
 function showNotification(message, type = 'success') {
     const existingNotification = document.querySelector('.notification-toast');

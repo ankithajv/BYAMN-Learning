@@ -286,6 +286,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Track learning activity when lesson is completed
+    async function trackLearningActivity(lessonId, courseId, duration = 0) {
+        try {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            // Initialize streak manager if not already done
+            const streakManager = window.initializeStreakManager();
+            
+            // Record learning activity for streak tracking
+            await streakManager.recordLearningActivity(duration);
+            
+            console.log('Learning activity tracked for streak:', {
+                lessonId,
+                courseId,
+                duration,
+                streak: streakManager.currentStreak
+            });
+
+        } catch (error) {
+            console.error('Error tracking learning activity:', error);
+        }
+    }
+
     // Mark current lesson as complete
     function markLessonComplete() {
         if (!currentEnrollment || !currentCourse || currentLessonIndex >= currentCourse.lessons.length) {
@@ -317,6 +341,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Track analytics
                 const timeSpent = totalLessonTime;
                 trackLessonProgress(timeSpent, true);
+                
+                // Track learning activity for streak
+                trackLearningActivity(lessonId, currentCourse.id, timeSpent);
                 
                 // Check if course is completed
                 if (newProgress === 100) {
@@ -1024,6 +1051,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 await window.offlineSyncManager.queueProgressUpdate(progressData);
             }
 
+            // Track learning activity for streak
+            await trackLearningActivity(lessonId, courseId, timeSpent);
+
             // Update UI immediately
             updateLessonUI(lessonId, true);
             
@@ -1054,8 +1084,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Show success message
-            window.utils.showNotification('Lesson completed! Progress saved.', 'success');
+            // Show success message with streak info
+            if (window.utils && window.utils.showNotification) {
+                const streakManager = window.streakManager;
+                if (streakManager && streakManager.currentStreak > 1) {
+                    window.utils.showNotification(
+                        `Lesson completed! 🔥 ${streakManager.currentStreak}-day streak!`, 
+                        'success'
+                    );
+                } else {
+                    window.utils.showNotification('Lesson completed! Progress saved.', 'success');
+                }
+            }
 
         } catch (error) {
             console.error('Error marking lesson complete offline:', error);
@@ -1073,6 +1113,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then((updatedEnrollment) => {
             // Update enrollment in state
             currentEnrollment = updatedEnrollment;
+            
+            // Track learning activity for streak
+            trackLearningActivity(lessonId, currentCourse.id, totalLessonTime);
             
             // Clear saved watched time since lesson is now complete
             clearWatchedTimeFromLocalStorage(courseId, lessonId);
@@ -1101,8 +1144,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Show success notification
-            window.utils.showNotification('Lesson marked as complete! Great job on finishing this lesson.', 'success');
+            // Show success notification with streak info
+            if (window.utils && window.utils.showNotification) {
+                const streakManager = window.streakManager;
+                if (streakManager && streakManager.currentStreak > 1) {
+                    window.utils.showNotification(
+                        `Lesson completed! 🔥 ${streakManager.currentStreak}-day streak!`, 
+                        'success'
+                    );
+                } else {
+                    window.utils.showNotification('Lesson marked as complete! Great job on finishing this lesson.', 'success');
+                }
+            }
         })
         .catch((error) => {
             console.error('Error updating lesson progress:', error);
@@ -1753,3 +1806,86 @@ window.closeCelebration = function() {
         }
     });
 };
+
+// Track learning activity when lesson is completed
+async function trackLearningActivity(lessonId, courseId, duration = 0) {
+    try {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        // Initialize streak manager if not already done
+        const streakManager = window.initializeStreakManager();
+        
+        // Record learning activity for streak tracking
+        await streakManager.recordLearningActivity(duration);
+        
+        console.log('Learning activity tracked for streak:', {
+            lessonId,
+            courseId,
+            duration,
+            streak: streakManager.currentStreak
+        });
+
+    } catch (error) {
+        console.error('Error tracking learning activity:', error);
+    }
+}
+
+// Update the markLessonComplete function to include streak tracking
+async function markLessonComplete(lessonId, courseId, timeSpent = 0) {
+    try {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
+
+        // Track learning activity for streak
+        await trackLearningActivity(lessonId, courseId, timeSpent);
+
+        // Rest of existing markLessonComplete code...
+        const progressData = {
+            userId: user.uid,
+            courseId: courseId,
+            lessonId: lessonId,
+            progress: 100,
+            timeSpent: timeSpent,
+            timestamp: new Date().toISOString()
+        };
+
+        // Store progress locally immediately
+        if (window.offlineSyncManager) {
+            await window.offlineSyncManager.storeLocalProgress(
+                user.uid, 
+                courseId, 
+                lessonId, 
+                100, 
+                timeSpent
+            );
+            
+            // Queue for sync
+            await window.offlineSyncManager.queueProgressUpdate(progressData);
+        }
+
+        // Update UI immediately
+        updateLessonUI(lessonId, true);
+        
+        // Show success message with streak info
+        if (window.utils && window.utils.showNotification) {
+            const streakManager = window.streakManager;
+            if (streakManager && streakManager.currentStreak > 1) {
+                window.utils.showNotification(
+                    `Lesson completed! 🔥 ${streakManager.currentStreak}-day streak!`, 
+                    'success'
+                );
+            } else {
+                window.utils.showNotification('Lesson completed! Progress saved.', 'success');
+            }
+        }
+
+    } catch (error) {
+        console.error('Error marking lesson complete:', error);
+        if (window.utils && window.utils.showNotification) {
+            window.utils.showNotification('Error saving progress. Please check your connection.', 'error');
+        }
+    }
+}
