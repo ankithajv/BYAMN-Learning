@@ -322,3 +322,24 @@ if (window.location.pathname.includes("/auth/")) {
     logoLink.href = "./index.html";
     logoImg.src = "./logo.png";
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Fix Login Button
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', (e) => {
+            e.stopImmediatePropagation(); 
+            window.location.href = './auth/login.html';
+        });
+    }
+
+    // 2. Fix Signup Button
+    const signupBtn = document.getElementById('signup-btn');
+    if (signupBtn) {
+        signupBtn.addEventListener('click', (e) => {
+            e.stopImmediatePropagation(); 
+            window.location.href = './auth/register.html';
+        });
+    }
+});
