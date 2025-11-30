@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Student Dashboard - BYAMN</title>
-    <meta name="description" content="Manage your courses, track your progress, and access your certificates.">
-    <link rel="icon" type="image/x-icon" href="./favicon.ico">
-    <link rel="icon" type="image/png" href="./logo.png">
+    <meta
+      name="description"
+      content="Manage your courses, track your progress, and access your certificates."
+    />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="icon" type="image/png" href="./logo.png" />
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Inter font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Custom styles -->
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css" />
 
     <!-- Firebase SDK - Using compat versions without type="module" -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -28,477 +34,800 @@
     <script src="assets/js/firebase.js"></script>
 
     <style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        }
-        
-        /* Header and navigation styles */
-        @media (max-width: 1024px) {
-            .header-nav {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .header-nav a {
-                margin-bottom: 1rem;
-            }
-        }
-        
-        /* Stats cards */
-        .stats-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-        }
-        
-        /* Course cards */
-        .course-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-        }
-        
-        /* Progress chart */
-        .clip-segment {
-            transition: all 0.3s ease;
-        }
-        
-        /* Loading spinner */
-        .loading-spinner {
-            width: 2.5rem;
-            height: 2.5rem;
-            border: 4px solid rgba(79, 70, 229, 0.2);
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Hover lift effect for cards */
-        .hover-lift {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .hover-lift:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        /* Line clamp for text truncation */
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .course-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Gradient backgrounds for analytics cards */
-        .bg-gradient-to-br {
-            background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-        }
-        
-        /* Engagement score colors */
-        .text-excellent { color: #10b981; }
-        .text-good { color: #3b82f6; }
-        .text-average { color: #f59e0b; }
-        .text-needs-improvement { color: #ef4444; }
-    </style>
-</head>
-<body class="min-h-screen bg-white">
-    <!-- Header -->
-        <header data-aos-duration="800" class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div data-aos="fade-down" class="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 gap-4">
-                <div class="flex items-center">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 flex items-center h-10 w-10">
-                            <img src="./logo.png" alt="BYAMN Logo" class="h-full w-full object-contain">
-                        </div>
-                        <h1 class="ml-3 font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent text-2xl">
-                            BYAMN
-                        </h1>
-                    </div>
-                </div>
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+          Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+          sans-serif;
+      }
 
-                <div class="flex flex-wrap items-center gap-3">
-                    <span id="user-name" class="text-gray-700 font-medium">Welcome, Student</span>
-                    <button id="logout-btn" class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-300">
-                        Logout
-                    </button>
-                </div>
+      /* Header and navigation styles */
+      @media (max-width: 1024px) {
+        .header-nav {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .header-nav a {
+          margin-bottom: 1rem;
+        }
+      }
+
+      /* Stats cards */
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+
+      /* Course cards */
+      .course-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+      }
+
+      /* Progress chart */
+      .clip-segment {
+        transition: all 0.3s ease;
+      }
+
+      /* Loading spinner */
+      .loading-spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 4px solid rgba(79, 70, 229, 0.2);
+        border-top: 4px solid #4f46e5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Hover lift effect for cards */
+      .hover-lift {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      /* Line clamp for text truncation */
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .course-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Gradient backgrounds for analytics cards */
+      .bg-gradient-to-br {
+        background-image: linear-gradient(
+          to bottom right,
+          var(--tw-gradient-stops)
+        );
+      }
+
+      /* Engagement score colors */
+      .text-excellent {
+        color: #10b981;
+      }
+      .text-good {
+        color: #3b82f6;
+      }
+      .text-average {
+        color: #f59e0b;
+      }
+      .text-needs-improvement {
+        color: #ef4444;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-white">
+    <!-- Header -->
+    <header
+      data-aos-duration="800"
+      class="bg-white shadow-sm sticky top-0 z-10"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          data-aos="fade-down"
+          class="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 gap-4"
+        >
+          <div class="flex items-center">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 flex items-center h-10 w-10">
+                <img
+                  src="./logo.png"
+                  alt="BYAMN Logo"
+                  class="h-full w-full object-contain"
+                />
+              </div>
+              <h1
+                class="ml-3 font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent text-2xl"
+              >
+                BYAMN
+              </h1>
             </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <span id="user-name" class="text-gray-700 font-medium"
+              >Welcome, Student</span
+            >
+            <button
+              id="logout-btn"
+              class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-300"
+            >
+              Logout
+            </button>
+          </div>
         </div>
+      </div>
     </header>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Welcome Section -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Student Dashboard</h1>
-            <p class="text-gray-600 mt-2">Continue your learning journey</p>
+      <!-- Welcome Section -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Student Dashboard</h1>
+        <p class="text-gray-600 mt-2">Continue your learning journey</p>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300"
+        >
+          <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-[#e5e7eb]">
+              <svg
+                class="h-6 w-6 text-[#5624d0]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-medium text-gray-900">
+                Enrolled Courses
+              </h3>
+              <p id="enrolled-count" class="text-2xl font-bold text-[#5624d0]">
+                0
+              </p>
+            </div>
+          </div>
         </div>
 
-        <!-- Stats Section -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg bg-[#e5e7eb]">
-                        <svg class="h-6 w-6 text-[#5624d0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Enrolled Courses</h3>
-                        <p id="enrolled-count" class="text-2xl font-bold text-[#5624d0]">0</p>
-                    </div>
-                </div>
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300"
+        >
+          <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-[#e5e7eb]">
+              <svg
+                class="h-6 w-6 text-green-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
-
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg bg-[#e5e7eb]">
-                        <svg class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Completed</h3>
-                        <p id="completed-count" class="text-2xl font-bold text-green-500">0</p>
-                    </div>
-                </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-medium text-gray-900">Completed</h3>
+              <p id="completed-count" class="text-2xl font-bold text-green-500">
+                0
+              </p>
             </div>
-
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg bg-[#e5e7eb]">
-                        <svg class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">In Progress</h3>
-                        <p id="in-progress-count" class="text-2xl font-bold text-amber-500">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg bg-[#e5e7eb]">
-                        <svg class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm8-12a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2v-6a2 2 0 00-2-2h-2z" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Certificates</h3>
-                        <p id="certificates-count" class="text-2xl font-bold text-blue-500">0</p>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
 
-        <!-- Analytics Section -->
-        <div class="mt-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Learning Analytics</h2>
-            
-            <!-- Key Metrics -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-indigo-100">
-                            <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Study Time</p>
-                            <p class="text-2xl font-semibold text-gray-900" id="study-time">0h 0m</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-green-100">
-                            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Lessons Completed</p>
-                            <p class="text-2xl font-semibold text-gray-900" id="lessons-completed">0</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-amber-100">
-                            <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Learning Streak</p>
-                            <p class="text-2xl font-semibold text-gray-900" id="learning-streak">0</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-purple-100">
-                            <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-.38 1.81.588 1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Favorite Category</p>
-                            <p class="text-2xl font-semibold text-gray-900" id="favorite-category">None</p>
-                        </div>
-                    </div>
-                </div>
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300"
+        >
+          <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-[#e5e7eb]">
+              <svg
+                class="h-6 w-6 text-amber-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
-            
-            <!-- Detailed Analytics -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Study Time Chart -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Study Time (Last 7 Days)</h3>
-                    <div id="study-time-chart-container" class="h-64">
-                        <div class="flex items-center justify-center h-full">
-                            <div class="text-center">
-                                <div class="loading-spinner mx-auto"></div>
-                                <p class="mt-4 text-gray-600">Loading analytics...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Activity Chart -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Lessons Completed (Last 14 Days)</h3>
-                    <div id="activity-chart-container" class="h-64">
-                        <div class="flex items-center justify-center h-full">
-                            <div class="text-center">
-                                <div class="loading-spinner mx-auto"></div>
-                                <p class="mt-4 text-gray-600">Loading activity data...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-medium text-gray-900">In Progress</h3>
+              <p
+                id="in-progress-count"
+                class="text-2xl font-bold text-amber-500"
+              >
+                0
+              </p>
             </div>
-            
-            <!-- Learning Patterns Section -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Learning Patterns</h3>
-                <div id="learning-patterns-container">
-                    <div class="flex items-center justify-center h-64">
-                        <div class="text-center">
-                            <div class="loading-spinner mx-auto"></div>
-                            <p class="mt-4 text-gray-600">Analyzing your learning patterns...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Achievements Section -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Achievements</h3>
-                    <a href="#" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View All</a>
-                </div>
-                <div id="achievements-container">
-                    <div class="flex items-center justify-center py-8">
-                        <div class="text-center">
-                            <div class="loading-spinner mx-auto"></div>
-                            <p class="mt-4 text-gray-600">Loading achievements...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Recommendations Section -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Recommended Courses</h3>
-                <div id="recommendations-container">
-                    <div class="flex items-center justify-center py-8">
-                        <div class="text-center">
-                            <div class="loading-spinner mx-auto"></div>
-                            <p class="mt-4 text-gray-600">Finding recommendations...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
 
-        <!-- Learning Challenges Section -->
-        <div class="bg-white rounded-xl shadow-md mb-8">
-            <div class="px-6 py-5 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800">Learning Challenges</h2>
-                <p class="text-gray-600 mt-1">Complete challenges to earn badges and track your progress</p>
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300"
+        >
+          <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-[#e5e7eb]">
+              <svg
+                class="h-6 w-6 text-blue-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm8-12a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2v-6a2 2 0 00-2-2h-2z"
+                />
+              </svg>
             </div>
-            <div class="p-6">
-                <div id="challenges-section">
-                    <!-- Challenges will be loaded here dynamically -->
-                    <div class="text-center py-8">
-                        <div class="loading-spinner mx-auto"></div>
-                        <p class="mt-4 text-gray-600">Loading challenges...</p>
-                    </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-medium text-gray-900">Certificates</h3>
+              <p
+                id="certificates-count"
+                class="text-2xl font-bold text-blue-500"
+              >
+                0
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Section -->
+      <div class="mt-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+          Learning Analytics
+        </h2>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-lg bg-indigo-100">
+                <svg
+                  class="h-6 w-6 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Study Time</p>
+                <p class="text-2xl font-semibold text-gray-900" id="study-time">
+                  0h 0m
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-lg bg-green-100">
+                <svg
+                  class="h-6 w-6 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">
+                  Lessons Completed
+                </p>
+                <p
+                  class="text-2xl font-semibold text-gray-900"
+                  id="lessons-completed"
+                >
+                  0
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-lg bg-amber-100">
+                <svg
+                  class="h-6 w-6 text-amber-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                  />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Learning Streak</p>
+                <p
+                  class="text-2xl font-semibold text-gray-900"
+                  id="learning-streak"
+                >
+                  0
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-lg bg-purple-100">
+                <svg
+                  class="h-6 w-6 text-purple-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-.38 1.81.588 1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">
+                  Favorite Category
+                </p>
+                <p
+                  class="text-2xl font-semibold text-gray-900"
+                  id="favorite-category"
+                >
+                  None
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <!-- Study Time Chart -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+              Study Time (Last 7 Days)
+            </h3>
+            <div id="study-time-chart-container" class="h-64">
+              <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                  <div class="loading-spinner mx-auto"></div>
+                  <p class="mt-4 text-gray-600">Loading analytics...</p>
                 </div>
+              </div>
             </div>
+          </div>
+
+          <!-- Activity Chart -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+              Lessons Completed (Last 14 Days)
+            </h3>
+            <div id="activity-chart-container" class="h-64">
+              <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                  <div class="loading-spinner mx-auto"></div>
+                  <p class="mt-4 text-gray-600">Loading activity data...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Learning Patterns Section -->
+        <div
+          class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8"
+        >
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Learning Patterns
+          </h3>
+          <div id="learning-patterns-container">
+            <div class="flex items-center justify-center h-64">
+              <div class="text-center">
+                <div class="loading-spinner mx-auto"></div>
+                <p class="mt-4 text-gray-600">
+                  Analyzing your learning patterns...
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Achievements Section -->
-        <div class="bg-white rounded-xl shadow-md mb-8">
-            <div class="px-6 py-5 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800">Your Achievements</h2>
-                <p class="text-gray-600 mt-1">Track your progress and celebrate your accomplishments</p>
+        <div
+          class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Achievements</h3>
+            <a
+              href="#"
+              class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+              >View All</a
+            >
+          </div>
+          <div id="achievements-container">
+            <div class="flex items-center justify-center py-8">
+              <div class="text-center">
+                <div class="loading-spinner mx-auto"></div>
+                <p class="mt-4 text-gray-600">Loading achievements...</p>
+              </div>
             </div>
-            <div class="p-6">
-                <div id="achievements-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Achievements will be loaded here dynamically -->
-                    <div class="text-center py-8">
-                        <svg class="mx-auto h-12 w-12 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p class="mt-4 text-gray-600">Loading your achievements...</p>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
 
-        <!-- Achievements Section -->
-        <div class="bg-white rounded-xl shadow-md mb-8">
-            <div class="px-6 py-5 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800">My Achievements</h2>
+        <!-- Recommendations Section -->
+        <div
+          class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8"
+        >
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Recommended Courses
+          </h3>
+          <div id="recommendations-container">
+            <div class="flex items-center justify-center py-8">
+              <div class="text-center">
+                <div class="loading-spinner mx-auto"></div>
+                <p class="mt-4 text-gray-600">Finding recommendations...</p>
+              </div>
             </div>
-            <div class="p-6">
-                <div id="achievements-container">
-                    <div class="text-center py-8">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.982 8.982M12 2.944a11.955 11.955 0 018.982 8.982M5.018 15.018A8.96 8.96 0 0112 12a8.96 8.96 0 016.982 3.018M12 12v9m-4-9h8" />
-                        </svg>
-                        <h3 class="mt-2 text-lg font-medium text-gray-900">No achievements yet</h3>
-                        <p class="mt-1 text-gray-500">Complete courses and maintain streaks to earn achievements.</p>
-                    </div>
-                </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning Challenges Section -->
+      <div class="bg-white rounded-xl shadow-md mb-8">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-800">
+            Learning Challenges
+          </h2>
+          <p class="text-gray-600 mt-1">
+            Complete weekly and monthly challenges to earn badges and track your
+            progress
+          </p>
+        </div>
+        <div class="p-6">
+          <div id="challenges-container">
+            <!-- Challenges will be loaded here dynamically -->
+            <div class="text-center py-12">
+              <div class="loading-spinner mx-auto mb-4"></div>
+              <p class="text-gray-600">Loading challenges...</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements Section -->
+      <div class="bg-white rounded-xl shadow-md mb-8">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-800">Your Achievements</h2>
+          <p class="text-gray-600 mt-1">
+            Track your progress and celebrate your accomplishments
+          </p>
+        </div>
+        <div class="p-6">
+          <div
+            id="achievements-container"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <!-- Achievements will be loaded here dynamically -->
+            <div class="text-center py-8">
+              <svg
+                class="mx-auto h-12 w-12 text-gray-400 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <p class="mt-4 text-gray-600">Loading your achievements...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements Section -->
+      <div class="bg-white rounded-xl shadow-md mb-8">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-800">My Achievements</h2>
+        </div>
+        <div class="p-6">
+          <div id="achievements-container">
+            <div class="text-center py-8">
+              <svg
+                class="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.982 8.982M12 2.944a11.955 11.955 0 018.982 8.982M5.018 15.018A8.96 8.96 0 0112 12a8.96 8.96 0 016.982 3.018M12 12v9m-4-9h8"
+                />
+              </svg>
+              <h3 class="mt-2 text-lg font-medium text-gray-900">
+                No achievements yet
+              </h3>
+              <p class="mt-1 text-gray-500">
+                Complete courses and maintain streaks to earn achievements.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Courses Section -->
+      <div class="bg-white rounded-xl shadow-md">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <div
+            class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4"
+          >
+            <h2 class="text-xl font-semibold text-gray-800">My Courses</h2>
+            <a
+              href="courses.html"
+              class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-300 inline-flex items-center"
+            >
+              <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+              Add Course
+            </a>
+          </div>
         </div>
 
-        <!-- Courses Section -->
-        <div class="bg-white rounded-xl shadow-md">
-            <div class="px-6 py-5 border-b border-gray-200">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                    <h2 class="text-xl font-semibold text-gray-800">My Courses</h2>
-                    <a href="courses.html" class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-300 inline-flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Add Course
-                    </a>
-                </div>
+        <div class="p-6">
+          <div
+            id="courses-container"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <!-- Courses will be loaded here dynamically -->
+            <div class="text-center py-12">
+              <svg
+                class="mx-auto h-16 w-16 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+              <h3 class="mt-4 text-lg font-medium text-gray-900">
+                No enrolled courses yet
+              </h3>
+              <p class="mt-2 text-gray-500">
+                Get started by browsing our course catalog
+              </p>
             </div>
-
-            <div class="p-6">
-                <div id="courses-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Courses will be loaded here dynamically -->
-                    <div class="text-center py-12">
-                        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        <h3 class="mt-4 text-lg font-medium text-gray-900">No enrolled courses yet</h3>
-                        <p class="mt-2 text-gray-500">Get started by browsing our course catalog</p>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
     </main>
 
     <!-- Footer -->
-        <footer data-aos-duration="1000" class="bg-neutral-900 text-white mt-24 fade-in">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center mb-4">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 flex items-center h-10 w-10">
-                                <img src="./logo.png" alt="BYAMN Logo" class="h-full w-full object-contain">
-                            </div>
-                            <h1 class="ml-3 font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent text-2xl">
-                                BYAMN
-                            </h1>
-                        </div>
-                    </div>
-                    <p class="typography-body text-neutral-300 max-w-md">
-                        Empowering learners worldwide with high-quality, accessible education for the digital age.
-                    </p>
+    <footer
+      data-aos-duration="1000"
+      class="bg-neutral-900 text-white mt-24 fade-in"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="col-span-1 md:col-span-2">
+            <div class="flex items-center mb-4">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 flex items-center h-10 w-10">
+                  <img
+                    src="./logo.png"
+                    alt="BYAMN Logo"
+                    class="h-full w-full object-contain"
+                  />
                 </div>
-
-                <div>
-                    <h3 class="typography-h3 mb-4">Platform</h3>
-                    <ul class="space-y-2 text-neutral-300">
-                        <li><a href="courses.html" class="hover:text-white transition-colors">Courses</a></li>
-                        <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="faq.html" class="hover:text-white transition-colors">FAQ</a></li>
-                        <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="typography-h3 mb-4">Legal</h3>
-                    <ul class="space-y-2 text-neutral-300">
-                        <li><a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><a href="terms.html" class="hover:text-white transition-colors">Terms of Service</a></li>
-                    </ul>
-                </div>
+                <h1
+                  class="ml-3 font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent text-2xl"
+                >
+                  BYAMN
+                </h1>
+              </div>
             </div>
+            <p class="typography-body text-neutral-300 max-w-md">
+              Empowering learners worldwide with high-quality, accessible
+              education for the digital age.
+            </p>
+          </div>
 
-            <div class="border-t border-neutral-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-neutral-300">© 2025 BYAMN. All rights reserved.</p>
-                <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="text-neutral-300 hover:text-white transition-colors">
-                        <span class="sr-only">Facebook</span>
-                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd"></path>
-                        </svg>
-                    </a>
-                    <a
-  href="#"
-  class="text-neutral-300 hover:text-white transition-colors duration-200 transform hover:scale-110"
->
-  <span class="sr-only">X (Twitter)</span> <svg
-    class="h-6 w-6"
-    fill="currentColor"
-    viewBox="0 0 512 512"
-    aria-hidden="true"
-  >
-    <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/>
-  </svg>
-</a>
-                    <a href="#" class="text-neutral-300 hover:text-white transition-colors">
-                        <span class="sr-only">LinkedIn</span>
-                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clip-rule="evenodd"></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
+          <div>
+            <h3 class="typography-h3 mb-4">Platform</h3>
+            <ul class="space-y-2 text-neutral-300">
+              <li>
+                <a
+                  href="courses.html"
+                  class="hover:text-white transition-colors"
+                  >Courses</a
+                >
+              </li>
+              <li>
+                <a href="about.html" class="hover:text-white transition-colors"
+                  >About Us</a
+                >
+              </li>
+              <li>
+                <a href="faq.html" class="hover:text-white transition-colors"
+                  >FAQ</a
+                >
+              </li>
+              <li>
+                <a
+                  href="contact.html"
+                  class="hover:text-white transition-colors"
+                  >Contact</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="typography-h3 mb-4">Legal</h3>
+            <ul class="space-y-2 text-neutral-300">
+              <li>
+                <a
+                  href="privacy.html"
+                  class="hover:text-white transition-colors"
+                  >Privacy Policy</a
+                >
+              </li>
+              <li>
+                <a href="terms.html" class="hover:text-white transition-colors"
+                  >Terms of Service</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
+
+        <div
+          class="border-t border-neutral-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center"
+        >
+          <p class="text-neutral-300">© 2025 BYAMN. All rights reserved.</p>
+          <div class="flex space-x-6 mt-4 md:mt-0">
+            <a
+              href="#"
+              class="text-neutral-300 hover:text-white transition-colors"
+            >
+              <span class="sr-only">Facebook</span>
+              <svg
+                class="h-6 w-6"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </a>
+            <a
+              href="#"
+              class="text-neutral-300 hover:text-white transition-colors"
+            >
+              <span class="sr-only">Twitter</span>
+              <svg
+                class="h-6 w-6"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"
+                ></path>
+              </svg>
+            </a>
+            <a
+              href="#"
+              class="text-neutral-300 hover:text-white transition-colors"
+            >
+              <span class="sr-only">LinkedIn</span>
+              <svg
+                class="h-6 w-6"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
     </footer>
 
     <!-- Main JavaScript -->
@@ -508,34 +837,43 @@
     <script src="assets/js/streak.js"></script>
     <script src="assets/js/challenges.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is authenticated
-            firebase.auth().onAuthStateChanged(function(user) {
-                if (user) {
-                    // Update user name in header
-                    const userNameElement = document.getElementById('user-name');
-                    if (userNameElement) {
-                        userNameElement.textContent = `Welcome, ${user.displayName || user.email}`;
-                    }
-                } else {
-                    // Redirect to login page if not authenticated
-                    window.location.href = './auth/login.html';
-                }
-            });
-
-            // Logout functionality
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function() {
-                    firebase.auth().signOut().then(function() {
-                        window.location.href = './index.html';
-                    }).catch(function(error) {
-                        console.error('Sign out error:', error);
-                        utils.showNotification('Error signing out: ' + error.message, 'error');
-                    });
-                });
+      document.addEventListener('DOMContentLoaded', function () {
+        // Check if user is authenticated
+        firebase.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            // Update user name in header
+            const userNameElement = document.getElementById('user-name');
+            if (userNameElement) {
+              userNameElement.textContent = `Welcome, ${
+                user.displayName || user.email
+              }`;
             }
+          } else {
+            // Redirect to login page if not authenticated
+            window.location.href = './auth/login.html';
+          }
         });
+
+        // Logout functionality
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function () {
+            firebase
+              .auth()
+              .signOut()
+              .then(function () {
+                window.location.href = './index.html';
+              })
+              .catch(function (error) {
+                console.error('Sign out error:', error);
+                utils.showNotification(
+                  'Error signing out: ' + error.message,
+                  'error'
+                );
+              });
+          });
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

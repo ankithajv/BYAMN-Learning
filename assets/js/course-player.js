@@ -319,29 +319,26 @@ document.addEventListener('DOMContentLoaded', function() {
             // Record learning activity for streak tracking
             await streakManager.recordLearningActivity(duration);
             
+            // Track challenge progress when lesson is completed
+            if (typeof learningChallenges !== 'undefined') {
+                learningChallenges.recordActivity('lesson_complete');
+                
+                // Also track daily streak
+                const today = new Date().toDateString();
+                const lastLessonDate = localStorage.getItem('last_lesson_date');
+                
+                if (lastLessonDate !== today) {
+                    learningChallenges.recordActivity('daily_streak');
+                    localStorage.setItem('last_lesson_date', today);
+                }
+            }
+            
             console.log('Learning activity tracked for streak:', {
                 lessonId,
                 courseId,
                 duration,
                 streak: streakManager.currentStreak
             });
-
-            // TRACK CHALLENGE PROGRESS - ADDED INTEGRATION
-            if (typeof learningChallenges !== 'undefined') {
-                // Track lesson completion
-                learningChallenges.recordActivity('lesson_complete');
-                
-                // Track study time (convert seconds to hours)
-                const studyTimeHours = duration / 3600; // Convert seconds to hours
-                if (studyTimeHours > 0) {
-                    learningChallenges.recordActivity('study_time', studyTimeHours);
-                }
-                
-                console.log('Challenge progress tracked:', {
-                    lessonComplete: true,
-                    studyTime: studyTimeHours
-                });
-            }
 
         } catch (error) {
             console.error('Error tracking learning activity:', error);
@@ -380,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const timeSpent = totalLessonTime;
                 trackLessonProgress(timeSpent, true);
                 
-                // Track learning activity for streak (includes challenge tracking)
+                // Track learning activity for streak
                 trackLearningActivity(lessonId, currentCourse.id, timeSpent);
                 
                 // Check if course is completed
@@ -413,12 +410,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Check for new achievements
                     checkForNewAchievements();
-                    
-                    // TRACK COURSE COMPLETION FOR CHALLENGES
-                    if (typeof learningChallenges !== 'undefined') {
-                        learningChallenges.recordActivity('course_complete');
-                        console.log('Course completion tracked for challenges');
-                    }
                 })
                 .catch(error => {
                     console.error('Error updating course completion analytics:', error);
@@ -1095,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 await window.offlineSyncManager.queueProgressUpdate(progressData);
             }
 
-            // Track learning activity for streak with enhanced error handling (includes challenge tracking)
+            // Track learning activity for streak with enhanced error handling
             await trackLearningActivity(lessonId, courseId, timeSpent);
 
             // Update UI immediately
@@ -1158,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update enrollment in state
             currentEnrollment = updatedEnrollment;
             
-            // Track learning activity for streak with enhanced error handling (includes challenge tracking)
+            // Track learning activity for streak with enhanced error handling
             trackLearningActivity(lessonId, currentCourse.id, totalLessonTime);
             
             // Clear saved watched time since lesson is now complete
@@ -1859,7 +1850,7 @@ async function markLessonComplete(lessonId, courseId, timeSpent = 0) {
             throw new Error('User not authenticated');
         }
 
-        // Track learning activity for streak with enhanced error handling (includes challenge tracking)
+        // Track learning activity for streak with enhanced error handling
         await trackLearningActivity(lessonId, courseId, timeSpent);
 
         // Rest of existing markLessonComplete code...

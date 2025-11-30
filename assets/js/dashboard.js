@@ -29,10 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookmarksSection = document.getElementById('bookmarks-section');
     const bookmarksCountElement = document.getElementById('bookmarks-count');
     
-    // Challenges elements
-    const challengesContainer = document.getElementById('challenges-container');
-    const challengesSection = document.getElementById('challenges-section');
-    
     // Store bookmarked courses
     let bookmarkedCourses = [];
     let allCourses = [];
@@ -40,9 +36,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize streak system
     let streakManager = null;
-    
-    // Initialize challenges system
-    let challengesManager = null;
+
+    // Initialize Learning Challenges system
+    function initializeLearningChallenges() {
+        if (typeof learningChallenges !== 'undefined') {
+            console.log('Learning challenges system initialized');
+            
+            // Listen for course enrollment events
+            document.addEventListener('courseEnrolled', function(event) {
+                learningChallenges.recordActivity('course_enroll');
+                refreshChallenges();
+            });
+            
+            // Listen for lesson completion events
+            document.addEventListener('lessonCompleted', function(event) {
+                learningChallenges.recordActivity('lesson_complete');
+                refreshChallenges();
+            });
+            
+            // Listen for study session events
+            document.addEventListener('studySessionCompleted', function(event) {
+                learningChallenges.recordActivity('study_session');
+                refreshChallenges();
+            });
+        }
+    }
+
+    // Refresh challenges when user completes actions
+    function refreshChallenges() {
+        if (typeof learningChallenges !== 'undefined') {
+            learningChallenges.refreshDisplay();
+        }
+    }
 
     // Enhanced streak initialization in dashboard
     async function initializeStreakSystem() {
@@ -76,243 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show basic streak section even if initialization fails
             createBasicStreakSection();
         }
-    }
-    
-    // Initialize challenges system
-    async function initializeChallengesSystem() {
-        const user = firebaseServices.auth.currentUser;
-        if (!user) return;
-
-        try {
-            // Initialize challenges manager
-            if (typeof learningChallenges !== 'undefined') {
-                challengesManager = learningChallenges;
-                challengesManager.initializeChallenges();
-                
-                // Wait for challenges data to load
-                const checkChallengesReady = setInterval(() => {
-                    if (challengesManager && challengesManager.isInitialized) {
-                        clearInterval(checkChallengesReady);
-                        displayChallengesOnDashboard(challengesManager);
-                        
-                        // Simulate some user activity for demo (remove in production)
-                        setTimeout(() => {
-                            challengesManager.recordActivity('lesson_complete');
-                            challengesManager.recordActivity('study_time', 0.5);
-                        }, 2000);
-                    }
-                }, 500);
-
-                // Timeout after 5 seconds
-                setTimeout(() => {
-                    clearInterval(checkChallengesReady);
-                    if (challengesManager) {
-                        displayChallengesOnDashboard(challengesManager);
-                    }
-                }, 5000);
-            }
-        } catch (error) {
-            console.error('Error initializing challenges system:', error);
-            // Show basic challenges section even if initialization fails
-            createBasicChallengesSection();
-        }
-    }
-    
-    // Display challenges on dashboard
-    function displayChallengesOnDashboard(challengesManager) {
-        if (!challengesContainer) return;
-        
-        const activeChallenges = challengesManager.getActiveChallenges();
-        const completedChallenges = challengesManager.getCompletedChallenges();
-        
-        if (activeChallenges.length === 0 && completedChallenges.length === 0) {
-            challengesContainer.innerHTML = `
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">No challenges available</h3>
-                    <p class="mt-2 text-gray-500">New challenges will appear as you progress in your learning journey.</p>
-                </div>
-            `;
-            return;
-        }
-        
-        let challengesHTML = '';
-        
-        // Display active challenges first
-        if (activeChallenges.length > 0) {
-            challengesHTML += `
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Active Challenges</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        ${activeChallenges.map(challenge => generateChallengeCardHTML(challenge)).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Display completed challenges
-        if (completedChallenges.length > 0) {
-            challengesHTML += `
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Completed Challenges</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        ${completedChallenges.map(challenge => generateChallengeCardHTML(challenge)).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        
-        challengesContainer.innerHTML = challengesHTML;
-        
-        // Add event listeners for challenge actions
-        document.querySelectorAll('.challenge-action-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const challengeId = this.getAttribute('data-challenge-id');
-                const action = this.getAttribute('data-action');
-                handleChallengeAction(challengeId, action);
-            });
-        });
-    }
-    
-    // Generate challenge card HTML
-    function generateChallengeCardHTML(challenge) {
-        const isCompleted = challenge.status === 'completed';
-        const isActive = challenge.status === 'active';
-        const progress = challenge.progress || 0;
-        const target = challenge.target || 1;
-        const progressPercent = Math.min(100, (progress / target) * 100);
-        
-        // Determine challenge type styling
-        let typeClass = 'bg-blue-100 text-blue-800';
-        let iconHTML = '';
-        
-        switch (challenge.type) {
-            case 'streak':
-                typeClass = 'bg-orange-100 text-orange-800';
-                iconHTML = `
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
-                    </svg>
-                `;
-                break;
-            case 'lessons':
-                typeClass = 'bg-green-100 text-green-800';
-                iconHTML = `
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                `;
-                break;
-            case 'study_time':
-                typeClass = 'bg-purple-100 text-purple-800';
-                iconHTML = `
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                `;
-                break;
-            default:
-                typeClass = 'bg-blue-100 text-blue-800';
-                iconHTML = `
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                `;
-        }
-        
-        return `
-            <div class="bg-white rounded-lg border ${isCompleted ? 'border-green-200 bg-green-50' : 'border-gray-200'} p-4 hover:shadow-md transition-all duration-300">
-                <div class="flex justify-between items-start mb-3">
-                    <div class="flex items-center">
-                        <div class="p-2 rounded-lg ${typeClass}">
-                            ${iconHTML}
-                        </div>
-                        <div class="ml-3">
-                            <h4 class="font-semibold text-gray-900">${challenge.title}</h4>
-                            <p class="text-sm text-gray-600">${challenge.description}</p>
-                        </div>
-                    </div>
-                    ${isCompleted ? `
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Completed
-                        </span>
-                    ` : ''}
-                </div>
-                
-                ${!isCompleted ? `
-                    <div class="mb-3">
-                        <div class="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Progress</span>
-                            <span>${progress}/${target}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="h-2 rounded-full ${typeClass.split(' ')[0]}" style="width: ${progressPercent}%"></div>
-                        </div>
-                    </div>
-                ` : ''}
-                
-                <div class="flex justify-between items-center">
-                    <div class="text-sm text-gray-500">
-                        ${challenge.reward ? `Reward: ${challenge.reward}` : ''}
-                    </div>
-                    ${isActive ? `
-                        <button class="challenge-action-btn px-3 py-1 text-sm rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-300"
-                                data-challenge-id="${challenge.id}" data-action="start">
-                            Start
-                        </button>
-                    ` : isCompleted ? `
-                        <span class="text-sm font-medium text-green-600">✓ Earned</span>
-                    ` : `
-                        <button class="challenge-action-btn px-3 py-1 text-sm rounded-md bg-gray-600 hover:bg-gray-700 text-white font-medium transition duration-300"
-                                data-challenge-id="${challenge.id}" data-action="view">
-                            View
-                        </button>
-                    `}
-                </div>
-                
-                ${challenge.timeRemaining && !isCompleted ? `
-                    <div class="mt-2 text-xs text-gray-500">
-                        Time remaining: ${challenge.timeRemaining}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    }
-    
-    // Handle challenge actions
-    function handleChallengeAction(challengeId, action) {
-        if (!challengesManager) return;
-        
-        switch (action) {
-            case 'start':
-                challengesManager.startChallenge(challengeId);
-                utils.showNotification('Challenge started!', 'success');
-                break;
-            case 'view':
-                // Navigate to challenges page or show details
-                utils.showNotification('Viewing challenge details', 'info');
-                break;
-        }
-        
-        // Refresh challenges display
-        displayChallengesOnDashboard(challengesManager);
-    }
-    
-    // Create basic challenges section if initialization fails
-    function createBasicChallengesSection() {
-        if (!challengesContainer) return;
-        
-        challengesContainer.innerHTML = `
-            <div class="text-center py-8">
-                <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 class="mt-4 text-lg font-medium text-gray-900">Challenges Loading</h3>
-                <p class="mt-2 text-gray-500">We're preparing your learning challenges.</p>
-            </div>
-        `;
     }
 
     // Display streak counter on dashboard
@@ -775,9 +563,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const action = isBookmarked ? 'removed from' : 'saved to';
         utils.showNotification(`Course ${action} bookmarks`, 'success');
         
-        // Record challenge activity for bookmarks
-        if (challengesManager) {
-            challengesManager.recordActivity('bookmark_added');
+        // Record challenge activity for bookmarking
+        if (typeof learningChallenges !== 'undefined') {
+            learningChallenges.recordActivity('bookmark_add');
+            refreshChallenges();
         }
     }
 
@@ -862,8 +651,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize streak system
             initializeStreakSystem();
             
-            // Initialize challenges system
-            initializeChallengesSystem();
+            // Initialize Learning Challenges system
+            initializeLearningChallenges();
         } else {
             // User is signed out
             console.log('User is signed out');
@@ -928,6 +717,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 getCourseRecommendations(userEnrollments, courses, userAnalytics, recommendationInteractions), 
                 userAnalytics
             );
+            
+            // Initialize challenges after data is loaded
+            setTimeout(() => {
+                if (typeof learningChallenges !== 'undefined') {
+                    // Record initial activities based on loaded data
+                    if (userEnrollments.length > 0) {
+                        learningChallenges.recordActivity('course_enroll', userEnrollments.length);
+                    }
+                    
+                    // Check for completed courses
+                    const completedCourses = userEnrollments.filter(e => e.progress === 100).length;
+                    if (completedCourses > 0) {
+                        learningChallenges.recordActivity('course_complete', completedCourses);
+                    }
+                    
+                    refreshChallenges();
+                }
+            }, 1000);
         })
         .catch((error) => {
             console.error('Error loading dashboard data:', error);
